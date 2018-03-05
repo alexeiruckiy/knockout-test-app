@@ -5,8 +5,8 @@ class FoodSection {
     this.name = section.name;
     this.items = section.items;
     this.isColapsed = ko.observable(false);
-    this.orderItem = (...args) => orderItem(...args);
-    this.unorderItem = (...args) => unorderItem(...args);
+    this.orderItem = orderItem;
+    this.unorderItem = unorderItem;
   }
 
   toggleCollapse() {

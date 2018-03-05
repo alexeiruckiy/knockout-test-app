@@ -14,6 +14,7 @@ const datepicker = {
     $el.datepicker({
       autoclose: true,
       todayHighlight: true,
+      startDate: 'today',
     });
 
     if (changeDate) {

@@ -4,7 +4,6 @@ import './styles.less';
 
 class App {
   constructor() {
-    this.orders = ko.observableArray([]);
     this.basket = ko.observableArray([]);
     this.sections = ko.observableArray([]);
     this.products = ko.observableArray([]);
@@ -13,7 +12,6 @@ class App {
     this.sectionItems = ko.pureComputed(() => {
       const sections = this.sections();
       const products = this.products();
-      const orders = this.getActiveDateOrders();
 
       return sections.map(section => ({
         ...section,
@@ -21,9 +19,19 @@ class App {
           .filter(product => product.section_id === section.id)
           .map(product => ({
             ...product,
-            order: orders.find(order => order.product_id === product.id),
+            order: ko.observable(null),
           })),
       }));
+    });
+
+    this.fillSectionOrders = ko.computed(() => {
+      const orders = this.getActiveDateOrders();
+
+      this.sectionItems().forEach(sItem => {
+        sItem.items.forEach(product => {
+          product.order(orders.find(order => order.product_id === product.id));
+        });
+      });
     });
 
     this.price = ko.pureComputed(() => {
@@ -56,7 +64,7 @@ class App {
   }
 
   orderItem(product) {
-    const { order } = product;
+    const order = ko.unwrap(product.order);
 
     if (order) {
       order.count(order.count() + 1);
@@ -68,7 +76,9 @@ class App {
     }
   }
 
-  unorderItem({ order }) {
+  unorderItem(product) {
+    const order = ko.unwrap(product.order);
+
     if (order) {
       const count = Math.max(order.count() - 1, 0);
 
@@ -83,9 +93,9 @@ class App {
     }
   }
 
-  buildOrder({ id }) {
+  buildOrder(product) {
     return {
-      product_id: id,
+      product_id: product.id,
       date: this.activeDate(),
       count: ko.observable(1),
     };
